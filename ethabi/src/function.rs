@@ -8,7 +8,7 @@
 
 //! Contract function call builder.
 
-#[cfg(feature = "full-serde")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(not(feature = "std"))]
@@ -18,11 +18,11 @@ use crate::{
 };
 
 /// Contract function specification.
-#[cfg_attr(feature = "full-serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
 	/// Function name.
-	#[cfg_attr(feature = "full-serde", serde(deserialize_with = "crate::util::sanitize_name::deserialize"))]
+	#[cfg_attr(feature = "serde", serde(deserialize_with = "crate::util::sanitize_name::deserialize"))]
 	pub name: String,
 	/// Function input.
 	pub inputs: Vec<Param>,
@@ -31,10 +31,10 @@ pub struct Function {
 	#[deprecated(note = "The constant attribute was removed in Solidity 0.5.0 and has been \
 				replaced with stateMutability.")]
 	/// Constant function.
-	#[cfg_attr(feature = "full-serde", serde(skip_serializing_if = "Option::is_none"))]
+	#[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
 	pub constant: Option<bool>,
 	/// Whether the function reads or modifies blockchain state
-	#[cfg_attr(feature = "full-serde", serde(rename = "stateMutability", default))]
+	#[cfg_attr(feature = "serde", serde(rename = "stateMutability", default))]
 	pub state_mutability: StateMutability,
 }
 
@@ -91,8 +91,8 @@ impl Function {
 		let outputs = self.outputs.iter().map(|p| p.kind.to_string()).collect::<Vec<_>>().join(",");
 
 		match (inputs.len(), outputs.len()) {
-			(_, 0) => format!("{}({})", self.name, inputs),
-			(_, _) => format!("{}({}):({})", self.name, inputs, outputs),
+			(_, 0) => format!("{}({inputs})", self.name),
+			(_, _) => format!("{}({inputs}):({outputs})", self.name),
 		}
 	}
 }
